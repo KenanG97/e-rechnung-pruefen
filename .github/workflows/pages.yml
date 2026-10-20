@@ -1,0 +1,49 @@
+# Baut die Website bei jedem Push und veröffentlicht sie kostenlos auf GitHub Pages.
+name: Website veröffentlichen
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: |
+          pip install -q lxml pypdf pytest reportlab
+          git clone -q --depth 1 https://github.com/itplr-kosit/xrechnung-testsuite /tmp/xts
+          python -m pytest -q tests
+      - name: Website bauen
+        run: |
+          python - <<'PY'
+          import json, os
+          cfg = json.load(open("site/config.json"))
+          owner, repo = os.environ["GITHUB_REPOSITORY"].split("/")
+          if "IHR-GITHUB-NAME" in cfg["site_url"]:
+              cfg["site_url"] = f"https://{owner.lower()}.github.io/{repo}/"
+          json.dump(cfg, open("site/config.json", "w"), ensure_ascii=False, indent=2)
+          PY
+          python site/build.py --release
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

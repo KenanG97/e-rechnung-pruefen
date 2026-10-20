@@ -1,0 +1,5 @@
+streamlit>=1.36
+lxml>=5.0
+pypdf>=4.0
+pandas>=2.0
+reportlab>=4.0

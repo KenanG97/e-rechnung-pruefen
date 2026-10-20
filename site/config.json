@@ -1,0 +1,19 @@
+{
+  "site_url": "https://IHR-GITHUB-NAME.github.io/e-rechnung-pruefen/",
+  "brand": "E-Rechnung prüfen",
+  "pyodide_base": "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/",
+  "impressum": {
+    "name": "Keno Giuri Benedetto",
+    "strasse": "",
+    "plz_ort": "",
+    "land": "Österreich",
+    "email": "benedettokeno@gmx.at",
+    "uid": "",
+    "gewerbe": "",
+    "behoerde": ""
+  },
+  "kanzlei_preis_jahr": "190 €",
+  "kontakt_email": "benedettokeno@gmx.at",
+  "plausible_domain": "",
+  "license_public_key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET865u84Rf4nXXmkRVSFS9WE6cJpj6bEo/+P1H3XoWTVJc6Ko09UqJFfZnRJnH5pU7NRabDu2eylFPcujSH6moA=="
+}
