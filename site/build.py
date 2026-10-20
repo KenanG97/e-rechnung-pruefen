@@ -32,14 +32,20 @@ LOGO = ('<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rec
         '<circle cx="19" cy="19" r="5.2" fill="var(--paper)" stroke="currentColor" stroke-width="2"/>'
         '<path d="M16.6 19.1l1.6 1.6 3-3.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
 
-NAV = [
-    ("", "Prüfen"),
+NAV = [  # Werkzeuge (Kopfzeile)
+    ("", "E-Rechnung prüfen"),
+    ("kleinunternehmergrenze/", "Kleinunternehmer-Grenze"),
+    ("grundpreis-gpsr-check/", "Shop-Check"),
+    ("kanzlei/", "Pro-Lizenz"),
+]
+GUIDES = [  # Ratgeber (Fußzeile, „Weiterlesen“)
     ("xrechnung-oeffnen/", "XRechnung öffnen"),
     ("zugferd-pruefen/", "ZUGFeRD prüfen"),
-    ("e-rechnung-vorsteuerabzug/", "Vorsteuer-Check"),
-    ("rechnungsbetrug-iban/", "IBAN-Betrug"),
-    ("kleinunternehmergrenze/", "Kleinunternehmer-Grenze"),
-    ("kanzlei/", "Für Kanzleien"),
+    ("e-rechnung-vorsteuerabzug/", "E-Rechnung & Vorsteuerabzug"),
+    ("rechnungsbetrug-iban/", "Rechnungsbetrug: IBAN geändert"),
+    ("e-rechnung-kleinunternehmer/", "E-Rechnung für Kleinunternehmer"),
+    ("kleinunternehmergrenze/", "Kleinunternehmergrenze 2026"),
+    ("grundpreis-gpsr-check/", "Grundpreis & GPSR im Online-Shop"),
 ]
 
 
@@ -89,7 +95,7 @@ def page(path: str, title: str, description: str, body: str, *, schema: list | N
 <main class="wrap">
 {body}
 </main>
-<footer><div class="wrap"><nav><a href="{r}impressum/">Impressum</a><a href="{r}datenschutz/">Datenschutz</a><a href="{r}e-rechnung-kleinunternehmer/">E-Rechnung für Kleinunternehmer</a><a href="{r}kanzlei/">Kanzlei-Lizenz</a></nav>
+<footer><div class="wrap"><nav aria-label="Ratgeber">{"".join(f'<a href="{r}{gp}">{html.escape(gn)}</a>' for gp, gn in GUIDES)}</nav><nav><a href="{r}impressum/">Impressum</a><a href="{r}datenschutz/">Datenschutz</a></nav>
 <p>Automatisierte Plausibilitätsprüfung – keine Steuer- oder Rechtsberatung. Stand der Inhalte: {date.today():%m/%Y}.</p></div></footer>
 </body>
 </html>"""
@@ -107,7 +113,7 @@ def cta(r: str, text="Rechnung jetzt kostenlos prüfen") -> str:
 
 
 def related(r: str, skip: str) -> str:
-    items = [(p, n) for p, n in NAV[1:5] + [("e-rechnung-kleinunternehmer/", "E-Rechnung für Kleinunternehmer")] if p != skip]
+    items = [(p, n) for p, n in GUIDES if p != skip]
     return "<h2>Weiterlesen</h2><ul class=\"related\">" + "".join(f'<li><a href="{r}{p}">{n}</a></li>' for p, n in items) + "</ul>"
 
 
@@ -407,24 +413,26 @@ def build_kleinunternehmer():
 
 def build_kanzlei():
     p = "kanzlei/"
-    t = "Kanzlei-Lizenz: E-Rechnungen im Stapel prüfen"
-    d = "Für Buchhaltungsbüros und Steuerkanzleien: E-Rechnungen von Mandanten im Stapel prüfen und als Tabelle exportieren – ohne Upload."
+    t = "Pro-Lizenz: Stapelprüfung, alle Produkte, Export"
+    d = "Pro-Lizenz für E-Rechnung prüfen und den Shop-Check: unbegrenzte Stapelprüfung, Sammelexport, alle Produkte – ohne Upload."
     mail = CFG.get("kontakt_email") or imp.get("email")
-    contact = (f'<a class="btn" href="mailto:{html.escape(mail)}?subject=Kanzlei-Lizenz%20E-Rechnung%20pr%C3%BCfen">Lizenz anfragen</a>'
-               if mail else '<p class="muted">Kontaktadresse folgt.</p>')
+    contact = (f'<a class="btn" href="mailto:{html.escape(mail)}?subject=Pro-Lizenz">Lizenz anfragen</a>' if mail else "")
     body = f"""<article>
-<h1>Kanzlei-Lizenz</h1>
-<p class="lead">Ihre Mandanten schicken XRechnungen und ZUGFeRD-PDFs. Prüfen Sie sie im Stapel, bevor sie in die Buchhaltung gehen.</p>
-<h2>Was die Lizenz freischaltet</h2>
+<h1>Pro-Lizenz</h1>
+<p class="lead">Die Werkzeuge sind für Einzelfälle kostenlos. Wer regelmäßig viele Rechnungen oder Produkte prüft, schaltet mit einer Lizenz alle Grenzen frei.</p>
+<h2>Was freigeschaltet wird</h2>
 <ul>
-<li>Stapelprüfung ohne Begrenzung (kostenlos: drei Dateien je Durchgang).</li>
-<li>Sammelexport aller geprüften Rechnungen als CSV – Lieferant, Nummer, Datum, Netto, USt, Brutto, IBAN, Status.</li>
-<li>Gleiche Prüftiefe wie in der freien Version: Pflichtangaben, Rechnung, Reverse Charge, IBAN-Wechsel, Duplikate.</li>
+<li><b>E-Rechnung prüfen:</b> Stapelprüfung ohne Begrenzung (kostenlos: 3 Dateien je Durchgang) und Sammelexport als CSV – Lieferant, Nummer, Datum, Netto, USt, Brutto, IBAN, Status.</li>
+<li><b>Shop-Check:</b> alle Produkte statt der ersten 25 und Export der Produktliste mit berechneten Grundpreisen und Prüfergebnis.</li>
 </ul>
+<h2>Preise</h2>
+<div class="tbl"><table><thead><tr><th>Lizenz</th><th>Für</th><th class="n">pro Jahr</th></tr></thead><tbody>
+<tr><td>Pro</td><td>Online-Shops, Selbstständige</td><td class="n">49 €</td></tr>
+<tr><td>Kanzlei</td><td>Buchhaltungsbüros, Steuerkanzleien (je Standort)</td><td class="n">{html.escape(CFG.get('kanzlei_preis_jahr', ''))}</td></tr>
+</tbody></table></div>
+<p class="muted">Preise zzgl. gesetzlicher Umsatzsteuer, falls anfallend. Pilotkunden testen drei Monate kostenlos gegen ehrliches Feedback.</p>
 <h2>Datenschutz</h2>
-<p>Die Prüfung läuft im Browser. Mandantendaten werden nicht an uns übertragen. Für die Nutzung ist deshalb in der Regel kein Auftragsverarbeitungsvertrag nötig – prüfen Sie das bitte für Ihre Kanzlei.</p>
-<h2>Preis</h2>
-<p><b>{html.escape(CFG.get('kanzlei_preis_jahr', ''))} pro Jahr</b> und Standort, zzgl. gesetzlicher Umsatzsteuer, falls anfallend. Pilotkanzleien testen drei Monate kostenlos gegen Feedback.</p>
+<p>Alle Prüfungen laufen im Browser. Rechnungen, Kontoauszüge und Produktdaten werden nicht an uns übertragen.</p>
 {contact}
 </article>"""
     page(p, t, d, body, schema=[article_schema(p, t, d)])
@@ -499,6 +507,68 @@ def build_kug():
     page(p, t, d, body, schema=schema, tool="kug.js")
 
 
+def build_shop():
+    p = "grundpreis-gpsr-check/"
+    t = "Grundpreis & GPSR prüfen: Produktdaten-Check für Online-Shops"
+    d = ("Shopify-, WooCommerce- oder Etsy-Export hochladen: fehlende oder falsche Grundpreise (PAngV) und fehlende "
+         "Herstellerangaben nach GPSR finden – bevor die Abmahnung kommt. Kostenlos, ohne Upload.")
+    qas = [
+        ("Wann brauche ich einen Grundpreis?",
+         "Wenn Sie Verbrauchern Ware nach Gewicht, Volumen, Länge oder Fläche anbieten – also z. B. 500 g Honig, 0,75 l Öl oder "
+         "10 m Band. Der Grundpreis muss sich seit Mai 2022 auf 1 kg, 1 l, 1 m, 1 m² oder 1 m³ beziehen."),
+        ("Darf ich den Grundpreis noch pro 100 g angeben?",
+         "Für Fertigpackungen nicht mehr. Die frühere Ausnahme für Waren bis 250 g ist mit der Neufassung der Preisangabenverordnung "
+         "zum 28.05.2022 entfallen."),
+        ("Welche Herstellerangaben verlangt die GPSR im Online-Shop?",
+         "Name bzw. Marke, Postanschrift und eine elektronische Adresse des Herstellers. Sitzt der Hersteller außerhalb der EU, "
+         "zusätzlich Name und Anschrift der verantwortlichen Person in der EU. Dazu kommen Produktbild, Angaben zur Identifizierung "
+         "und Warn- bzw. Sicherheitshinweise."),
+        ("Wie bekomme ich die CSV-Datei aus meinem Shop?",
+         "Shopify: Produkte → Exportieren → CSV für Excel. WooCommerce: Produkte → Exportieren. Etsy: Shop-Manager → Einstellungen → "
+         "Optionen → Daten herunterladen. Andere Shops: jeder Produkt-Export mit Name und Preis funktioniert."),
+        ("Werden meine Produktdaten hochgeladen?",
+         "Nein. Die Prüfung läuft vollständig in Ihrem Browser."),
+    ]
+    body = f"""
+<h1>Grundpreis & GPSR: Produktdaten prüfen</h1>
+<p class="lead">Fehlende Grundpreise und fehlende Herstellerangaben gehören zu den häufigsten Abmahngründen im Online-Handel. Laden Sie Ihren Produkt-Export und sehen Sie in Sekunden, welche Artikel betroffen sind – mit dem richtigen Grundpreis gleich dazu.</p>
+<div id="shop-drop" class="drop" role="button" tabindex="0" aria-describedby="shop-hint">
+  <strong>Produkt-Export (CSV) hier ablegen</strong>
+  <span id="shop-hint">Shopify, WooCommerce, Etsy oder jeder andere Export mit Name und Preis</span>
+  <input id="shop-file" type="file" accept=".csv,.txt,text/csv">
+</div>
+<ul class="trust"><li>Daten bleiben auf Ihrem Gerät</li><li>{25} Produkte kostenlos</li><li>Grundpreis wird gleich berechnet</li></ul>
+<p id="shop-status" role="status" class="muted"></p>
+<div id="shop-out"></div>
+<div class="intro-content">
+<h2>Was geprüft wird</h2>
+<h3>Grundpreis nach § 4 PAngV</h3>
+<ul>
+<li>Füllmenge wird aus Titel, Variante oder Angaben wie „Inhalt: 250 ml“ erkannt – auch Mehrfachpackungen wie „3 x 50 g“.</li>
+<li>Fehlt der Grundpreis, berechnet das Werkzeug ihn: 9,90 € für 500 g → 19,80 € / 1 kg.</li>
+<li>Vorhandene Grundpreise werden nachgerechnet; Angaben pro 100 g oder 100 ml werden als unzulässig markiert.</li>
+<li>Bei Shopify wird die eingebaute Grundpreis-Einstellung (Einheitspreis) mitgeprüft.</li>
+<li>Ausnahmen: unter 10 g/ml und Füllmenge genau 1 kg/l. Maße wie „30 x 40 cm“ bei Postern werden nicht als Verkaufsmenge gewertet.</li>
+</ul>
+<h3>Herstellerangaben nach Art. 19 GPSR</h3>
+<ul>
+<li>Hersteller bzw. Marke vorhanden?</li>
+<li>Postanschrift und E-Mail oder Website des Herstellers in den Produktdaten?</li>
+<li>Hinweise auf einen Hersteller außerhalb der EU ohne verantwortliche Person in der EU?</li>
+<li>Produktbild vorhanden? Bei Spielzeug, Elektrogeräten, Kerzen, Kosmetik u. Ä.: Sicherheitshinweise in der Beschreibung?</li>
+</ul>
+<div class="note"><p>Viele Shops zeigen Herstellerangaben über Metafelder oder Theme-Blöcke an, die nicht im Export stehen. Dann erscheint „Angaben nicht gefunden“, obwohl Ihr Shop korrekt ist – prüfen Sie in diesem Fall stichprobenartig die Produktseite.</p></div>
+<h2>Was kostet eine Abmahnung?</h2>
+<p>Abmahnungen von Mitbewerbern sind mit Anwaltskosten und einer strafbewehrten Unterlassungserklärung verbunden; bei einem zweiten Verstoß wird die vereinbarte Vertragsstrafe fällig. Fehlende Grundpreise und Herstellerangaben lassen sich automatisiert finden – deshalb sind sie beliebte Ziele.</p>
+{faq_html(qas)}
+{related('../', p)}
+</div>"""
+    schema = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Grundpreis- & GPSR-Check",
+               "url": SITE + p, "applicationCategory": "BusinessApplication", "operatingSystem": "Browser", "inLanguage": "de",
+               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}, faq_schema(qas)]
+    page(p, t, d, body, schema=schema, tool="shop.js")
+
+
 def build_legal():
     if IMPRESSUM_OK:
         lines = [imp["name"], imp["strasse"], imp["plz_ort"], imp.get("land", "")]
@@ -534,7 +604,7 @@ def main():
     if DIST.exists():
         shutil.rmtree(DIST)
     (DIST / "static" / "py").mkdir(parents=True)
-    for f in ("style.css", "app.js", "kug.js"):
+    for f in ("style.css", "app.js", "kug.js", "shop.js"):
         shutil.copy(HERE / "static" / f, DIST / "static" / f)
     (DIST / "static" / "favicon.svg").write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" style="color:#1D2B4F"><style>:root{--paper:#fff}</style>'
@@ -547,13 +617,14 @@ def main():
             if py.name in ("store.py", "license.py"):
                 continue  # serverseitig, im Browser nicht nötig
             z.write(py, f"erechnung/{py.name}")
-    with zipfile.ZipFile(DIST / "static" / "py" / "kugrenze.zip", "w", zipfile.ZIP_DEFLATED) as z:
-        for py in sorted((ROOT / "kugrenze").glob("*.py")):
-            z.write(py, f"kugrenze/{py.name}")
+    for pkg in ("kugrenze", "shopcheck"):
+        with zipfile.ZipFile(DIST / "static" / "py" / f"{pkg}.zip", "w", zipfile.ZIP_DEFLATED) as z:
+            for py in sorted((ROOT / pkg).glob("*.py")):
+                z.write(py, f"{pkg}/{py.name}")
     if LOCAL:
         shutil.copytree(HERE.parent / "pyodide-local", DIST / "pyodide-local")
     build_home(); build_xrechnung(); build_zugferd(); build_vorsteuer(); build_betrug()
-    build_kleinunternehmer(); build_kanzlei(); build_kug(); build_legal()
+    build_kleinunternehmer(); build_kanzlei(); build_kug(); build_shop(); build_legal()
     (DIST / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in SITEMAP) + "</urlset>\n")
