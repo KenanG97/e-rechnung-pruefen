@@ -1,11 +1,11 @@
 {
-  "site_url": "https://IHR-GITHUB-NAME.github.io/e-rechnung-pruefen/",
+  "site_url": "https://kenang97.github.io/e-rechnung-pruefen/",
   "brand": "E-Rechnung prüfen",
   "pyodide_base": "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/",
   "impressum": {
     "name": "Keno Giuri Benedetto",
-    "strasse": "",
-    "plz_ort": "",
+    "strasse": "Andreas-Hofer-Straße 51",
+    "plz_ort": "6020 Innsbruck",
     "land": "Österreich",
     "email": "benedettokeno@gmx.at",
     "uid": "",
