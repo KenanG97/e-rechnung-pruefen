@@ -78,6 +78,7 @@ def page(path: str, title: str, description: str, body: str, *, schema: list | N
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{f'<meta name="google-site-verification" content="{html.escape(CFG["google_verification"])}">' if CFG.get("google_verification") else ""}
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(description)}">
 <link rel="canonical" href="{canonical}">
