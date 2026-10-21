@@ -581,9 +581,10 @@ def build_sepa():
          "Bankdatei im neuen Format pain.008.001.08 erstellen. Kostenlos, ohne Upload.")
     inp = 'style="width:100%;font:inherit;padding:.5rem;border:1.5px solid var(--ink-soft);border-radius:4px;background:var(--sheet);color:var(--ink)"'
     qas = [
-        ("Was ändert sich im November 2026 bei SEPA-Dateien?",
-         "Viele Banken stellen auf die ISO-20022-Version 2019 um und akzeptieren für Lastschriften dann nur noch das Format "
-         "pain.008.001.08; das ältere pain.008.001.02 wird nicht mehr oder nur nach individueller Vereinbarung angenommen. "
+        ("Was ändert sich 2026 bei SEPA-Lastschriftdateien?",
+         "Banken stellen auf die ISO-20022-Version 2019 um. In Deutschland akzeptieren viele Banken für Lastschriften ab November 2026 "
+         "nur noch pain.008.001.08; das ältere pain.008.001.02 wird dann nicht mehr oder nur nach Vereinbarung angenommen. In Österreich "
+         "gelten bankindividuelle Termine – fragen Sie Ihre Bank. "
          "Adressen müssen, wenn angegeben, strukturiert oder hybrid sein – mindestens mit Ort und Land."),
         ("Was brauche ich, um Mitgliedsbeiträge per Lastschrift einzuziehen?",
          "Eine Gläubiger-Identifikationsnummer (in Österreich bei der Oesterreichischen Nationalbank, in Deutschland bei der "
@@ -600,7 +601,7 @@ def build_sepa():
     ]
     body = f"""
 <h1>SEPA-Lastschrift für Vereine</h1>
-<p class="lead">Mitgliederliste aus Excel laden, Fehler sehen, Bankdatei herunterladen – im neuen Format <b>pain.008.001.08</b>, das viele Banken ab November 2026 verlangen.</p>
+<p class="lead">Mitgliederliste aus Excel laden, Fehler sehen, Bankdatei herunterladen – im neuen Format <b>pain.008.001.08</b> (ISO 20022, Version 2019), auf das die Banken umstellen – in Deutschland vielfach mit Stichtag November 2026.</p>
 <form id="sepa" class="sheet" style="display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))">
   <label>Name des Vereins<br><input name="name" required autocomplete="organization" {inp}></label>
   <label>IBAN des Vereinskontos<br><input name="iban" required {inp}></label>
