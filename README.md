@@ -1,4 +1,14 @@
-# 🧾 E-Rechnung prüfen
+# 🧾 Werkzeuge für Kleinunternehmer, Shops und Vereine
+
+Vier Browser-Werkzeuge auf einer Website (Python via Pyodide, Hosting kostenlos auf GitHub Pages):
+
+| App | Paket | Seite | Konzept |
+|---|---|---|---|
+| E-Rechnung prüfen | `erechnung/` | `/` | KONZEPT.md |
+| Kleinunternehmer-Grenzwächter | `kugrenze/` | `/kleinunternehmergrenze/` | KONZEPT_APP2.md |
+| Shop-Check Grundpreis & GPSR | `shopcheck/` | `/grundpreis-gpsr-check/` | KONZEPT_APP3.md |
+| SEPA-Lastschrift für Vereine | `sepalast/` | `/sepa-lastschrift-verein/` | KONZEPT_APP4.md |
+
 
 **Website (Browser-Version, empfohlen):** läuft komplett im Browser via Pyodide, Hosting kostenlos auf GitHub Pages – siehe **LIVEGANG.md** und **MARKETING.md**. Bauen: `python site/build.py`.
 

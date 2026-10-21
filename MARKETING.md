@@ -59,3 +59,8 @@ Regeln, damit es nicht als Spam gilt (sonst schadet es mehr als es nützt):
 
 ## Abbruchkriterium
 Wenn nach 3 Monaten **keine** Kanzlei zahlen will, verfolgen Sie das Projekt nicht weiter. Die Seite kann dann trotzdem gratis online bleiben.
+
+## Kanäle für App 2–4
+- **Kleinunternehmer-Grenze:** Saisonaler Höhepunkt ist Oktober bis Januar (Jahresende, Planung). Antworten in Gründer- und Selbstständigen-Foren auf die Frage „Grenze überschritten, was jetzt?“
+- **Shop-Check:** Etsy- und Shopify-Händlergruppen, Händlerforen. Aufhänger: „Abmahnung wegen Grundpreis oder GPSR? Vorher prüfen.“
+- **SEPA für Vereine:** Der Formatwechsel im **November 2026** ist ein aktueller Aufhänger, deshalb jetzt handeln. Kurzer Hinweistext an Landes-Sportverbände, Blasmusik- und Feuerwehrverbände sowie Gemeindezeitungen: „Kostenloser Generator für das neue Lastschriftformat, Daten bleiben am eigenen PC.“

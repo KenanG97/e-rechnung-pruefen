@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
       - name: Tests
         run: |
-          pip install -q lxml pypdf pytest reportlab
+          pip install -q lxml pypdf pytest reportlab openpyxl
           git clone -q --depth 1 https://github.com/itplr-kosit/xrechnung-testsuite /tmp/xts
           python -m pytest -q tests
       - name: Website bauen

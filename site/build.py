@@ -36,6 +36,7 @@ NAV = [  # Werkzeuge (Kopfzeile)
     ("", "E-Rechnung prüfen"),
     ("kleinunternehmergrenze/", "Kleinunternehmer-Grenze"),
     ("grundpreis-gpsr-check/", "Shop-Check"),
+    ("sepa-lastschrift-verein/", "SEPA für Vereine"),
     ("kanzlei/", "Pro-Lizenz"),
 ]
 GUIDES = [  # Ratgeber (Fußzeile, „Weiterlesen“)
@@ -46,6 +47,7 @@ GUIDES = [  # Ratgeber (Fußzeile, „Weiterlesen“)
     ("e-rechnung-kleinunternehmer/", "E-Rechnung für Kleinunternehmer"),
     ("kleinunternehmergrenze/", "Kleinunternehmergrenze 2026"),
     ("grundpreis-gpsr-check/", "Grundpreis & GPSR im Online-Shop"),
+    ("sepa-lastschrift-verein/", "SEPA-Lastschrift für Vereine"),
 ]
 
 
@@ -69,6 +71,7 @@ def page(path: str, title: str, description: str, body: str, *, schema: list | N
         cfg_js = ("<script>window.ERECHNUNG_CFG=" + json.dumps({
             "root": r, "pyodideBase": base, "version": VERSION,
             "pypdfWheel": PYPDF_WHEEL, "licensePublicKey": CFG.get("license_public_key", ""),
+            "excelWheels": EXCEL_WHEELS,
         }) + f'</script><script defer src="{r}static/{tool if isinstance(tool, str) else 'app.js'}?v={VERSION}"></script>')
     doc = f"""<!doctype html>
 <html lang="de">
@@ -424,10 +427,11 @@ def build_kanzlei():
 <ul>
 <li><b>E-Rechnung prüfen:</b> Stapelprüfung ohne Begrenzung (kostenlos: 3 Dateien je Durchgang) und Sammelexport als CSV – Lieferant, Nummer, Datum, Netto, USt, Brutto, IBAN, Status.</li>
 <li><b>Shop-Check:</b> alle Produkte statt der ersten 25 und Export der Produktliste mit berechneten Grundpreisen und Prüfergebnis.</li>
+<li><b>SEPA für Vereine:</b> beliebig viele Mitglieder statt 25.</li>
 </ul>
 <h2>Preise</h2>
 <div class="tbl"><table><thead><tr><th>Lizenz</th><th>Für</th><th class="n">pro Jahr</th></tr></thead><tbody>
-<tr><td>Pro</td><td>Online-Shops, Selbstständige</td><td class="n">49 €</td></tr>
+<tr><td>Pro</td><td>Online-Shops, Selbstständige, Vereine</td><td class="n">49 €</td></tr>
 <tr><td>Kanzlei</td><td>Buchhaltungsbüros, Steuerkanzleien (je Standort)</td><td class="n">{html.escape(CFG.get('kanzlei_preis_jahr', ''))}</td></tr>
 </tbody></table></div>
 <p class="muted">Preise zzgl. gesetzlicher Umsatzsteuer, falls anfallend. Pilotkunden testen drei Monate kostenlos gegen ehrliches Feedback.</p>
@@ -569,6 +573,79 @@ def build_shop():
     page(p, t, d, body, schema=schema, tool="shop.js")
 
 
+def build_sepa():
+    p = "sepa-lastschrift-verein/"
+    t = "SEPA-Lastschrift für Vereine: XML-Datei aus Excel erstellen (pain.008, 2026)"
+    d = ("Mitgliedsbeiträge per SEPA-Lastschrift einziehen: Excel- oder CSV-Mitgliederliste laden, Fehler finden, "
+         "Bankdatei im neuen Format pain.008.001.08 erstellen. Kostenlos, ohne Upload.")
+    inp = 'style="width:100%;font:inherit;padding:.5rem;border:1.5px solid var(--ink-soft);border-radius:4px;background:var(--sheet);color:var(--ink)"'
+    qas = [
+        ("Was ändert sich im November 2026 bei SEPA-Dateien?",
+         "Viele Banken stellen auf die ISO-20022-Version 2019 um und akzeptieren für Lastschriften dann nur noch das Format "
+         "pain.008.001.08; das ältere pain.008.001.02 wird nicht mehr oder nur nach individueller Vereinbarung angenommen. "
+         "Adressen müssen, wenn angegeben, strukturiert oder hybrid sein – mindestens mit Ort und Land."),
+        ("Was brauche ich, um Mitgliedsbeiträge per Lastschrift einzuziehen?",
+         "Eine Gläubiger-Identifikationsnummer (in Österreich bei der Oesterreichischen Nationalbank, in Deutschland bei der "
+         "Bundesbank), ein unterschriebenes SEPA-Mandat jedes Mitglieds mit Mandatsreferenz und Datum, eine Inkassovereinbarung "
+         "mit Ihrer Bank und ein Online-Banking mit Datei-Upload."),
+        ("Muss ich die Mitglieder vorher informieren?",
+         "Ja, mit einer Vorabankündigung (Pre-Notification) grundsätzlich 14 Kalendertage vor dem Einzug, sofern keine kürzere Frist "
+         "vereinbart ist. Der Generator erstellt die Texte dafür gleich mit."),
+        ("Brauche ich den BIC?",
+         "Für Konten im Europäischen Wirtschaftsraum nicht – die IBAN genügt. Bei Konten etwa in der Schweiz oder in Großbritannien "
+         "sollten BIC und die Adresse des Zahlers angegeben werden."),
+        ("Werden die Mitgliederdaten hochgeladen?",
+         "Nein. Die Datei wird in Ihrem Browser erzeugt. Namen und IBANs verlassen Ihr Gerät nicht."),
+    ]
+    body = f"""
+<h1>SEPA-Lastschrift für Vereine</h1>
+<p class="lead">Mitgliederliste aus Excel laden, Fehler sehen, Bankdatei herunterladen – im neuen Format <b>pain.008.001.08</b>, das viele Banken ab November 2026 verlangen.</p>
+<form id="sepa" class="sheet" style="display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))">
+  <label>Name des Vereins<br><input name="name" required autocomplete="organization" {inp}></label>
+  <label>IBAN des Vereinskontos<br><input name="iban" required {inp}></label>
+  <label>Gläubiger-ID<br><input name="ci" required placeholder="z. B. AT12ZZZ00000000001" {inp}></label>
+  <label>BIC (optional)<br><input name="bic" {inp}></label>
+  <label>Ort des Vereins (optional)<br><input name="town" {inp}></label>
+  <label>Land (optional, z. B. AT)<br><input name="country" maxlength="2" {inp}></label>
+  <label>Einzugsdatum<br><input name="date" type="date" required {inp}></label>
+  <label>Betrag, falls nicht in der Liste (€)<br><input name="amount" inputmode="decimal" {inp}></label>
+  <label style="grid-column:1/-1">Verwendungszweck<br><input name="purpose" placeholder="Mitgliedsbeitrag 2027" {inp}></label>
+  <div style="grid-column:1/-1">
+    <label class="btn" style="margin:0">Mitgliederliste wählen (Excel oder CSV)<input id="sepa-file" type="file" accept=".xlsx,.xlsm,.csv,.txt" hidden></label>
+    <span id="sepa-fname" class="muted" style="margin-left:.5rem"></span>
+    <p class="muted" style="margin:.4rem 0 0">Benötigte Spalten: Name (oder Vorname/Nachname), IBAN, Betrag, Mandatsreferenz, Mandatsdatum. Optional: BIC, Straße, PLZ, Ort, Land, E-Mail. <button type="button" id="sepa-template" class="btn ghost" style="margin:0 0 0 .3rem;padding:.2rem .6rem">Vorlage herunterladen</button></p>
+  </div>
+  <div style="grid-column:1/-1"><button class="btn" type="submit" style="margin:0">Prüfen und Datei erstellen</button>
+  <p id="sepa-status" class="muted" role="status" style="margin:.4rem 0 0"></p></div>
+</form>
+<div id="sepa-out"></div>
+<div class="intro-content">
+<h2>Was geprüft wird</h2>
+<ul>
+<li>IBAN-Prüfziffer jedes Mitglieds und des Vereinskontos, Format des BIC</li>
+<li>Gläubiger-ID samt Prüfziffer</li>
+<li>Mandatsreferenz vorhanden, eindeutig, höchstens 35 zulässige Zeichen; Mandatsdatum nicht in der Zukunft; Hinweis bei Mandaten älter als 36 Monate</li>
+<li>Einzugsdatum ist ein Bankarbeitstag (TARGET-Kalender) und nicht zu kurzfristig; Erinnerung an die 14-tägige Vorabankündigung</li>
+<li>Konten außerhalb des EWR (z. B. Schweiz): Adresse des Zahlers vorhanden</li>
+<li>Umlaute und Sonderzeichen werden in den SEPA-Zeichensatz übertragen (ü → ue, ß → ss)</li>
+</ul>
+<p>Fehlerhafte Zeilen werden nicht in die Datei übernommen, sondern aufgelistet – so lehnt die Bank nicht die ganze Datei ab.</p>
+<h2>So geht es danach weiter</h2>
+<ol>
+<li>Vorabankündigungen versenden (Texte als CSV, z. B. für den Serienbrief).</li>
+<li>Die XML-Datei im Business-Online-Banking hochladen und Anzahl sowie Summe vor der Freigabe vergleichen.</li>
+<li>Rücklastschriften der folgenden Tage abgleichen und die Liste aktualisieren.</li>
+</ol>
+<div class="note"><p>Der Generator ersetzt nicht die Vereinbarung mit Ihrer Bank. Fragen Sie dort nach, ob pain.008.001.08 bereits angenommen wird und welche Vorlaufzeit gilt.</p></div>
+{faq_html(qas)}
+{related('../', p)}
+</div>"""
+    schema = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "SEPA-Lastschrift-Generator für Vereine",
+               "url": SITE + p, "applicationCategory": "FinanceApplication", "operatingSystem": "Browser", "inLanguage": "de",
+               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}, faq_schema(qas)]
+    page(p, t, d, body, schema=schema, tool="sepa.js")
+
+
 def build_legal():
     if IMPRESSUM_OK:
         lines = [imp["name"], imp["strasse"], imp["plz_ort"], imp.get("land", "")]
@@ -599,12 +676,12 @@ def build_legal():
 # ---------------------------------------------------------------- Ablauf
 
 def main():
-    global PYPDF_WHEEL, SITEMAP
+    global PYPDF_WHEEL, SITEMAP, EXCEL_WHEELS
     SITEMAP = []
     if DIST.exists():
         shutil.rmtree(DIST)
     (DIST / "static" / "py").mkdir(parents=True)
-    for f in ("style.css", "app.js", "kug.js", "shop.js"):
+    for f in ("style.css", "app.js", "kug.js", "shop.js", "sepa.js"):
         shutil.copy(HERE / "static" / f, DIST / "static" / f)
     (DIST / "static" / "favicon.svg").write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" style="color:#1D2B4F"><style>:root{--paper:#fff}</style>'
@@ -612,19 +689,24 @@ def main():
     wheels = sorted((HERE / "static" / "py").glob("pypdf-*.whl"))
     PYPDF_WHEEL = wheels[-1].name
     shutil.copy(wheels[-1], DIST / "static" / "py" / PYPDF_WHEEL)
+    EXCEL_WHEELS = []
+    for pat in ("et_xmlfile-*.whl", "openpyxl-*.whl"):
+        w = sorted((HERE / "static" / "py").glob(pat))[-1]
+        shutil.copy(w, DIST / "static" / "py" / w.name)
+        EXCEL_WHEELS.append(w.name)
     with zipfile.ZipFile(DIST / "static" / "py" / "erechnung.zip", "w", zipfile.ZIP_DEFLATED) as z:
         for py in sorted((ROOT / "erechnung").glob("*.py")):
             if py.name in ("store.py", "license.py"):
                 continue  # serverseitig, im Browser nicht nötig
             z.write(py, f"erechnung/{py.name}")
-    for pkg in ("kugrenze", "shopcheck"):
+    for pkg in ("kugrenze", "shopcheck", "sepalast"):
         with zipfile.ZipFile(DIST / "static" / "py" / f"{pkg}.zip", "w", zipfile.ZIP_DEFLATED) as z:
             for py in sorted((ROOT / pkg).glob("*.py")):
                 z.write(py, f"{pkg}/{py.name}")
     if LOCAL:
         shutil.copytree(HERE.parent / "pyodide-local", DIST / "pyodide-local")
     build_home(); build_xrechnung(); build_zugferd(); build_vorsteuer(); build_betrug()
-    build_kleinunternehmer(); build_kanzlei(); build_kug(); build_shop(); build_legal()
+    build_kleinunternehmer(); build_kanzlei(); build_kug(); build_shop(); build_sepa(); build_legal()
     (DIST / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in SITEMAP) + "</urlset>\n")
